@@ -111,7 +111,7 @@ class BufStr
         resize(m_size+size+m_spareRoom);
       }
     }
-    uint m_size;
+    uint m_size; //x
     uint m_writeOffset;
     const uint m_spareRoom; // 10Kb extra room to avoid frequent resizing
     char *m_buf;

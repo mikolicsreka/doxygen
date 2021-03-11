@@ -150,7 +150,7 @@ class Cache
         m_cacheItemList.pop_back();
       }
     }
-    size_t m_capacity;
+    size_t m_capacity; //x
     // list of items in the cache, sorted by most to least recently used.
     std::list<kv_pair> m_cacheItemList;
     // mapping for each key to a place in the list where item is found

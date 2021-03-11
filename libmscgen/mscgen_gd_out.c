@@ -67,7 +67,7 @@ typedef struct GdoContextTag
     colour[MAX_COLOURS];
 
     /** Number of valid references in \a colourRef[]. */
-    int         colourCount;
+    int         colourCount; //x
 
     /** The current pen for GD. */
     int         pen;
