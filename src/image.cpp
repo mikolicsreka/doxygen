@@ -21,6 +21,7 @@
 #include <math.h>
 #include "lodepng.h"
 #include "config.h"
+#include "strongtype.hpp"
 
 typedef unsigned char  Byte;
 
@@ -207,37 +208,37 @@ static Color palette3[] =
 };
 
 
-Image::Image(uint w,uint h)
+Image::Image(Width w, Height h)
 {
-  static int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
-  static int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
+  static int hue = Config_getInt(HTML_COLORSTYLE_HUE);
+  static int sat = Config_getInt(HTML_COLORSTYLE_SAT);
   static int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
 
-  double red1,green1,blue1;
-  double red2,green2,blue2;
+  double red1, green1, blue1;
+  double red2, green2, blue2;
 
-  ColoredImage::hsl2rgb(hue/360.0,                  // hue
-                        sat/255.0,                  // saturation
-                        pow(235/255.0,gamma/100.0), // luma (gamma corrected)
-                        &red1,&green1,&blue1
-                       );
+  ColoredImage::hsl2rgb(hue / 360.0,                  // hue
+    sat / 255.0,                  // saturation
+    pow(235 / 255.0, gamma / 100.0), // luma (gamma corrected)
+    &red1, &green1, &blue1
+  );
 
-  ColoredImage::hsl2rgb(hue/360.0,                  // hue
-                        sat/255.0,                  // saturation
-                        pow(138/255.0,gamma/100.0), // luma (gamma corrected)
-                        &red2,&green2,&blue2
-                       );
+  ColoredImage::hsl2rgb(hue / 360.0,                  // hue
+    sat / 255.0,                  // saturation
+    pow(138 / 255.0, gamma / 100.0), // luma (gamma corrected)
+    &red2, &green2, &blue2
+  );
 
-  palette[2].red   = (int)(red1   * 255.0);
+  palette[2].red = (int)(red1 * 255.0);
   palette[2].green = (int)(green1 * 255.0);
-  palette[2].blue  = (int)(blue1  * 255.0);
+  palette[2].blue = (int)(blue1 * 255.0);
 
-  palette[3].red   = (int)(red2   * 255.0);
+  palette[3].red = (int)(red2 * 255.0);
   palette[3].green = (int)(green2 * 255.0);
-  palette[3].blue  = (int)(blue2  * 255.0);
+  palette[3].blue = (int)(blue2 * 255.0);
 
-  m_data = new uchar[w*h];
-  memset(m_data,0,w*h);
+  m_data = new uchar[w.as_base() * h.as_base()];
+  memset(m_data, 0, w.as_base() * h.as_base());
   m_width = w;
   m_height = h;
 }
@@ -249,14 +250,14 @@ Image::~Image()
 
 void Image::setPixel(uint x,uint y,uchar val)
 {
-  if (x<m_width && y<m_height)
-    m_data[y*m_width+x] = val;
+  if (x<m_width.as_base() && y<m_height.as_base())
+    m_data[y*m_width.as_base()+x] = val;
 }
 
 uchar Image::getPixel(uint x,uint y) const
 {
-  if (x<m_width && y<m_height)
-    return m_data[y*m_width+x];
+  if (x<m_width.as_base() && y<m_height.as_base())
+    return m_data[y*m_width.as_base()+x];
   else
     return 0;
 }
@@ -363,19 +364,19 @@ void Image::drawVertArrow(uint x,uint ys,uint ye,uchar colIndex,uint mask)
   }
 }
 
-void Image::drawRect(uint x,uint y,uint w,uint h,uchar colIndex,uint mask)
+void Image::drawRect(uint x,uint y,Width w, Height h,uchar colIndex,uint mask)
 {
-  drawHorzLine(y,x,x+w-1,colIndex,mask);
-  drawHorzLine(y+h-1,x,x+w-1,colIndex,mask);
-  drawVertLine(x,y,y+h-1,colIndex,mask);
-  drawVertLine(x+w-1,y,y+h-1,colIndex,mask);
+  drawHorzLine(y,x,x+w.as_base() -1,colIndex,mask);
+  drawHorzLine(y+h.as_base() -1,x,x+w.as_base() -1,colIndex,mask);
+  drawVertLine(x,y,y+h.as_base() -1,colIndex,mask);
+  drawVertLine(x+w.as_base() -1,y,y+h.as_base() -1,colIndex,mask);
 }
 
-void Image::fillRect(uint x,uint y,uint width,uint height,uchar colIndex,uint mask)
+void Image::fillRect(uint x,uint y,Width width,Height height,uchar colIndex,uint mask)
 {
   uint xp,yp,xi,yi;
-  for (yp=y,yi=0;yp<y+height;yp++,yi++)
-    for (xp=x,xi=0;xp<x+width;xp++,xi++)
+  for (yp=y,yi=0;yp<y+height.as_base();yp++,yi++)
+    for (xp=x,xi=0;xp<x+width.as_base();xp++,xi++)
       if (mask&(1<<((xi+yi)&0x1f))) 
         setPixel(xp,yp,colIndex);
 }
@@ -399,7 +400,7 @@ bool Image::save(const char *fileName,int mode)
   }
   encoder.infoPng.color.colorType = 3; 
   encoder.infoRaw.color.colorType = 3;
-  LodePNG_encode(&encoder, &buffer, &bufferSize, m_data, m_width, m_height);
+  LodePNG_encode(&encoder, &buffer, &bufferSize, m_data, m_width.as_base(), m_height.as_base());
   LodePNG_saveFile(buffer, bufferSize, fileName);
   free(buffer);
   LodePNG_Encoder_cleanup(&encoder);
@@ -472,16 +473,16 @@ void ColoredImage::hsl2rgb(double h,double s,double l,
   *pBlue  = b;
 }
 
-ColoredImage::ColoredImage(uint width,uint height,
+ColoredImage::ColoredImage(Width width, Height height,
            const uchar *greyLevels,const uchar *alphaLevels,
            int saturation,int hue,int gamma)
 {
   m_hasAlpha = alphaLevels!=0;
-  m_width    = width;
-  m_height   = height;
-  m_data     = (uchar*)malloc(width*height*4);
+  m_width = Width{ width };
+  m_height = Height{ height };
+  m_data     = (uchar*)malloc(width.as_base() *height.as_base() *4);
   uint i;
-  for (i=0;i<width*height;i++)
+  for (i=0;i<width.as_base() *height.as_base();i++)
   {
     uchar r,g,b,a;
     double red,green,blue;
@@ -513,7 +514,7 @@ bool ColoredImage::save(const char *fileName)
   LodePNG_Encoder_init(&encoder);
   encoder.infoPng.color.colorType = m_hasAlpha ? 6 : 2; // 2=RGB 24 bit, 6=RGBA 32 bit
   encoder.infoRaw.color.colorType = 6; // 6=RGBA 32 bit
-  LodePNG_encode(&encoder, &buffer, &bufferSize, m_data, m_width, m_height);
+  LodePNG_encode(&encoder, &buffer, &bufferSize, m_data, m_width.as_base() ,  m_height.as_base() );
   LodePNG_saveFile(buffer, bufferSize, fileName);
   LodePNG_Encoder_cleanup(&encoder);
   free(buffer);

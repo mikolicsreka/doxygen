@@ -212,22 +212,22 @@ static Protection getMinProtectionLevel(const DiagramItemList &dil)
 }
 
 static void writeBitmapBox(DiagramItem *di,Image *image,
-                           uint x,uint y,uint w,uint h,bool firstRow,
+                           uint x,uint y,Width w,Height h,bool firstRow,
                            bool hasDocs,bool children=FALSE)
 {
   uchar colFill = hasDocs ? (firstRow ? 0 : 2) : 7;
   uchar colBorder = (firstRow || !hasDocs) ? 1 : 3;
   uint l = Image::stringLength(di->label());
   uint mask=virtToMask(di->virtualness());
-  image->fillRect(x+1,y+1,w-2,h-2,colFill,mask);
+  image->fillRect(x + 1, y + 1, Width{ w.as_base() - 2 }, Height{ h.as_base() - 2 }, colFill, mask);
   image->drawRect(x,y,w,h,colBorder,mask);
-  image->writeString(x+(w-l)/2, y+(h-fontHeight)/2, di->label(),1);
+  image->writeString(x+(w.as_base() -l)/2, y+(h.as_base() -fontHeight)/2, di->label(),1);
   if (children)
   {
     uint i;
     for (i=0;i<5;i++)
     {
-      image->drawHorzLine(y+h+i-6,x+w-2-i,x+w-2,firstRow?1:3,0xffffffff);
+      image->drawHorzLine(y+h.as_base() +i-6,x+w.as_base() -2-i,x+w.as_base() -2,firstRow?1:3,0xffffffff);
     }
   }
 }
@@ -608,7 +608,7 @@ void TreeDiagram::drawBoxes(FTextStream &t,Image *image,
             x = di->xPos()*(cellWidth+labelHorSpacing)/gridWidth;
             if (doBase)
             {
-              y = image->height()-
+              y = image->height().as_base() -
                 superRows*cellHeight-
                 (superRows-1)*labelVertSpacing-
                 di->yPos()*(cellHeight+labelVertSpacing)/gridHeight;
@@ -637,7 +637,7 @@ void TreeDiagram::drawBoxes(FTextStream &t,Image *image,
         if (bitmap)
         {
           bool hasDocs=di->getClassDef()->isLinkable();
-          writeBitmapBox(di,image,x,y,cellWidth,cellHeight,firstRow,
+          writeBitmapBox(di, image, x, y, Width{ cellWidth }, Height{ cellHeight }, firstRow,
               hasDocs,di->numChildren()>0);
           if (!firstRow && generateMap)
             writeMapArea(t,di->getClassDef(),relPath,x,y,cellWidth,cellHeight);
@@ -660,7 +660,7 @@ void TreeDiagram::drawBoxes(FTextStream &t,Image *image,
           x = di->xPos()*(cellWidth+labelHorSpacing)/gridWidth;
           if (doBase)
           {
-            y = image->height()-
+            y = image->height().as_base() -
               superRows*cellHeight-
               (superRows-1)*labelVertSpacing-
               di->yPos()*(cellHeight+labelVertSpacing)/gridHeight;
@@ -671,7 +671,7 @@ void TreeDiagram::drawBoxes(FTextStream &t,Image *image,
               di->yPos()*(cellHeight+labelVertSpacing)/gridHeight;
           }
           bool hasDocs=di->getClassDef()->isLinkable();
-          writeBitmapBox(di.get(),image,x,y,cellWidth,cellHeight,firstRow,hasDocs);
+          writeBitmapBox(di.get(), image, x, y, Width{ cellWidth }, Height{ cellHeight }, firstRow, hasDocs);
           if (!firstRow && generateMap)
             writeMapArea(t,di->getClassDef(),relPath,x,y,cellWidth,cellHeight);
         }
@@ -723,7 +723,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
             x = di->xPos()*(cellWidth+labelHorSpacing)/gridWidth + cellWidth/2;
             if (doBase) // base classes
             {
-              y = image->height()-
+              y = image->height().as_base() -
                 (superRows-1)*(cellHeight+labelVertSpacing)-
                 di->yPos()*(cellHeight+labelVertSpacing)/gridHeight;
               image->drawVertArrow(x,y,y+labelVertSpacing/2,
@@ -764,7 +764,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
               (cellWidth+labelHorSpacing)/gridWidth+cellWidth/2;
             if (doBase) // base classes
             {
-              ys = image->height()-
+              ys = image->height().as_base() -
                 (superRows-1)*(cellHeight+labelVertSpacing)-
                 di->yPos()*(cellHeight+labelVertSpacing)/gridHeight;
               y = ys - cellHeight/2;
@@ -888,7 +888,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
             x = di->xPos()*(cellWidth+labelHorSpacing)/gridWidth + cellWidth/2;
             if (doBase) // base classes
             {
-              y = image->height()-
+              y = image->height().as_base() -
                 (superRows-1)*(cellHeight+labelVertSpacing)-
                 di->yPos()*(cellHeight+labelVertSpacing)/gridHeight;
               /* write input line */
@@ -933,7 +933,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
             x = di->xPos()*(cellWidth+labelHorSpacing)/gridWidth + cellWidth/2;
             if (doBase) // base classes
             {
-              y = image->height()-
+              y = image->height().as_base() -
                 (superRows-1)*(cellHeight+labelVertSpacing)-
                 cellHeight-labelVertSpacing/2-
                 di->yPos()*(cellHeight+labelVertSpacing)/gridHeight;
@@ -1352,9 +1352,9 @@ void ClassDiagram::writeImage(FTextStream &t,const char *path,
   uint maxXPos    = QMAX(xb,xs);
   uint labelVertMargin = 6; //QMAX(6,(cellWidth-fontHeight)/6); // aspect at least 1:3
   uint cellHeight = labelVertMargin*2+fontHeight;
-  uint imageWidth = (maxXPos+gridWidth)*cellWidth/gridWidth+
-                    (maxXPos*labelHorSpacing)/gridWidth;
-  uint imageHeight = rows*cellHeight+(rows-1)*labelVertSpacing;
+  Width imageWidth = Width{ (maxXPos + gridWidth) * cellWidth / gridWidth +
+                    (maxXPos * labelHorSpacing) / gridWidth };
+  Height imageHeight = Height{ rows * cellHeight + (rows - 1) * labelVertSpacing };
 
   Image image(imageWidth,imageHeight);
 

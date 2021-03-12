@@ -6463,7 +6463,7 @@ void writeColoredImgData(const char *dir,ColoredImgDataItem data[])
     QFile f(fileName);
     if (f.open(IO_WriteOnly))
     {
-      ColoredImage img(data->width,data->height,data->content,data->alpha,
+      ColoredImage img(Width{ data->width }, Height{ data->height }, data->content, data->alpha,
                        sat,hue,gamma);
       img.save(fileName);
     }
