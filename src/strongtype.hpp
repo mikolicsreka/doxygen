@@ -46,6 +46,9 @@ public:
   constexpr BaseT &as_base() { return value; }
   [[nodiscard]] constexpr BaseT as_base() const { return value; }
 
+  constexpr BaseT& elements() { return value; }
+  [[nodiscard]] constexpr BaseT elements() const { return value; }
+
   using BaseType = BaseT; // makes 'BaseType' publicly accessible
 
   //! Provides operators for regular arithmetic operations

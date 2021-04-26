@@ -34,8 +34,12 @@ struct Color
   Byte alpha;
 };
 
-const int charSetWidth=80;
-const int charHeight=12;
+const int he = 12;
+const int wi = 80;
+
+static const CharWidth charSetWidth(wi);
+static const CharHeight charHeight(he);
+
 const int numChars=96;
 
 unsigned short charPos[numChars]    = 
@@ -71,7 +75,7 @@ unsigned char charWidth[numChars] =
      6, 7, 6, 4, 3, 4, 7, 5   
   };
 
-unsigned char fontRaw[charSetWidth*charHeight] = {
+unsigned char fontRaw[he * wi] = {
   0x02, 0x50, 0x01, 0x06, 0x20, 0x60, 0xc6, 0x04, 0x00, 0x00, 0x00, 0x27,
   0x04, 0x1c, 0x38, 0x11, 0xf1, 0xc7, 0xc7, 0x0e, 0x00, 0x00, 0x00, 0x03,
   0x81, 0xf0, 0x10, 0x7c, 0x1e, 0x3e, 0x1f, 0x9f, 0x87, 0x88, 0x24, 0x09,
@@ -237,8 +241,8 @@ Image::Image(Width w, Height h)
   palette[3].green = (int)(green2 * 255.0);
   palette[3].blue = (int)(blue2 * 255.0);
 
-  m_data = new uchar[w.as_base() * h.as_base()];
-  memset(m_data, 0, w.as_base() * h.as_base());
+  m_data = new uchar[(w * h).elements()];
+  memset(m_data, 0, (w*h).elements());
   m_width = w;
   m_height = h;
 }
@@ -270,7 +274,7 @@ void Image::writeChar(uint x,uint y,char c,uchar fg)
     uint rowOffset=0;
     uint cw = charWidth[ci];
     uint cp = charPos[ci];
-    for (yf=0;yf<charHeight;yf++)
+    for (yf=0;yf<charHeight.as_base();yf++)
     {
       unsigned short bitPattern=0;
       uint bitsLeft=cw;
@@ -294,7 +298,7 @@ void Image::writeChar(uint x,uint y,char c,uchar fg)
         setPixel(x+xf,y+yf,(bitPattern&mask) ? fg : getPixel(x+xf,y+yf));
         mask>>=1;
       }
-      rowOffset+=charSetWidth;
+      rowOffset+=charSetWidth.as_base();
     }
   } 
 }
@@ -480,9 +484,9 @@ ColoredImage::ColoredImage(Width width, Height height,
   m_hasAlpha = alphaLevels!=0;
   m_width = Width{ width };
   m_height = Height{ height };
-  m_data     = (uchar*)malloc(width.as_base() *height.as_base() *4);
+  m_data     = (uchar*)malloc((width*height).elements() *4);
   uint i;
-  for (i=0;i<width.as_base() *height.as_base();i++)
+  for (i=0;i< (width * height).elements();i++)
   {
     uchar r,g,b,a;
     double red,green,blue;
